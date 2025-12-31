@@ -4,10 +4,10 @@
 
 const CONFIG = {
   // GAS Web App URL（デプロイ後に設定）
-  GAS_API_URL: 'YOUR_GAS_WEB_APP_URL_HERE',
+  GAS_API_URL: 'https://script.google.com/macros/s/AKfycbxB4kj8g0ft7winPpKaAeVhH__HC-wyMhLcW7WgiJc7zeOmK40QPcqZ0j8dfM6-pZB4pA/exec',
   
   // ダッシュボード認証用APIキー
-  API_KEY: 'YOUR_DASHBOARD_API_KEY_HERE',
+  API_KEY: 'AFFILINNO',
   
   // アプリ名
   APP_NAME: 'AffilTweet',
