@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AffilTweet Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <!-- サイドバー -->
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-icon">🐦</span>
+        <span class="logo-text">AffilTweet</span>
+      </div>
+      <nav class="nav">
+        <a href="#" class="nav-item active" data-page="dashboard">
+          <span class="nav-icon">📊</span>
+          <span>ダッシュボード</span>
+        </a>
+        <a href="#" class="nav-item" data-page="trends">
+          <span class="nav-icon">🔥</span>
+          <span>トレンド</span>
+        </a>
+        <a href="#" class="nav-item" data-page="products">
+          <span class="nav-icon">🛒</span>
+          <span>商品</span>
+        </a>
+        <a href="#" class="nav-item" data-page="posts">
+          <span class="nav-icon">📝</span>
+          <span>投稿履歴</span>
+        </a>
+        <a href="#" class="nav-item" data-page="settings">
+          <span class="nav-icon">⚙️</span>
+          <span>設定</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- メインコンテンツ -->
+    <main class="main">
+      <!-- ダッシュボードページ -->
+      <section id="page-dashboard" class="page active">
+        <header class="page-header">
+          <h1>ダッシュボード</h1>
+          <button class="btn btn-primary" id="btn-fetch-trends">
+            🔄 トレンド取得
+          </button>
+        </header>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-total-posts">-</div>
+              <div class="stat-label">総投稿数</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🐦</div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-x-posts">-</div>
+              <div class="stat-label">X投稿</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🧵</div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-threads-posts">-</div>
+              <div class="stat-label">Threads投稿</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">👁️</div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-impressions">-</div>
+              <div class="stat-label">総インプレッション</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-header">
+              <h3>最新トレンド</h3>
+            </div>
+            <div class="card-body" id="latest-trends">
+              <div class="loading">読み込み中...</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>最新投稿</h3>
+            </div>
+            <div class="card-body" id="latest-posts">
+              <div class="loading">読み込み中...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- トレンドページ -->
+      <section id="page-trends" class="page">
+        <header class="page-header">
+          <h1>トレンド</h1>
+          <button class="btn btn-primary" id="btn-fetch-trends-2">
+            🔄 最新を取得
+          </button>
+        </header>
+        <div class="card">
+          <div class="card-body" id="trends-list">
+            <div class="loading">読み込み中...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 商品ページ -->
+      <section id="page-products" class="page">
+        <header class="page-header">
+          <h1>商品検索</h1>
+        </header>
+        <div class="card">
+          <div class="card-body">
+            <div class="search-form">
+              <input type="text" id="product-search-input" placeholder="キーワードを入力..." class="input">
+              <button class="btn btn-primary" id="btn-search-products">検索</button>
+            </div>
+            <div id="products-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 投稿履歴ページ -->
+      <section id="page-posts" class="page">
+        <header class="page-header">
+          <h1>投稿履歴</h1>
+        </header>
+        <div class="card">
+          <div class="card-body" id="posts-list">
+            <div class="loading">読み込み中...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 設定ページ -->
+      <section id="page-settings" class="page">
+        <header class="page-header">
+          <h1>設定</h1>
+          <button class="btn btn-primary" id="btn-save-settings">
+            💾 保存
+          </button>
+        </header>
+        
+        <div class="settings-grid">
+          <div class="card">
+            <div class="card-header"><h3>AI設定</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>AIモデル</label>
+                <select id="setting-ai-model" class="select">
+                  <option value="gemini">Gemini</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="grok">Grok</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h3>SNS設定</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="toggle">
+                  <input type="checkbox" id="setting-x-enabled">
+                  <span>X（Twitter）投稿</span>
+                </label>
+              </div>
+              <div class="form-group">
+                <label class="toggle">
+                  <input type="checkbox" id="setting-threads-enabled">
+                  <span>Threads投稿</span>
+                </label>
+              </div>
+              <div class="form-group">
+                <label>投稿時間（カンマ区切り）</label>
+                <input type="text" id="setting-post-times" class="input" placeholder="08:00,12:30,21:00">
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h3>カテゴリ設定</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="toggle"><input type="checkbox" id="setting-cat-product"><span>商品全般</span></label>
+              </div>
+              <div class="form-group">
+                <label class="toggle"><input type="checkbox" id="setting-cat-book"><span>本</span></label>
+              </div>
+              <div class="form-group">
+                <label class="toggle"><input type="checkbox" id="setting-cat-cd"><span>CD</span></label>
+              </div>
+              <div class="form-group">
+                <label class="toggle"><input type="checkbox" id="setting-cat-dvd"><span>DVD</span></label>
+              </div>
+              <div class="form-group">
+                <label class="toggle"><input type="checkbox" id="setting-cat-game"><span>ゲーム</span></label>
+              </div>
+              <div class="form-group">
+                <label class="toggle"><input type="checkbox" id="setting-cat-travel"><span>楽天トラベル</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-header"><h3>プロンプト設定</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>トレンド取得プロンプト</label>
+                <textarea id="setting-prompt-trend" class="textarea" rows="6"></textarea>
+              </div>
+              <div class="form-group">
+                <label>X投稿文生成プロンプト</label>
+                <textarea id="setting-prompt-x" class="textarea" rows="6"></textarea>
+              </div>
+              <div class="form-group">
+                <label>Threads投稿文生成プロンプト</label>
+                <textarea id="setting-prompt-threads" class="textarea" rows="6"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- トースト通知 -->
+  <div id="toast" class="toast"></div>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
