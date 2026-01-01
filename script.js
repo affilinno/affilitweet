@@ -199,13 +199,13 @@ async function searchProducts(keyword) {
 
     const result = await apiPost('searchProducts', { keyword });
     if (result && result.products) {
-        renderProductsList(result.products);
+        renderProductsList(result.products, keyword);
     } else {
         container.innerHTML = '<p class="loading">商品が見つかりませんでした</p>';
     }
 }
 
-function renderProductsList(products) {
+function renderProductsList(products, keyword) {
     const container = document.getElementById('products-list');
     if (!products || products.length === 0) {
         container.innerHTML = '<p class="loading">商品がありません</p>';
@@ -218,9 +218,82 @@ function renderProductsList(products) {
         <h4>${escapeHtml(p.productName)}</h4>
         <p>💰 ${formatNumber(p.price)}円 | ${p.category}</p>
       </div>
-      <a href="${p.affiliateUrl}" target="_blank" class="btn btn-secondary">商品を見る</a>
+      <div class="product-actions" style="display: flex; gap: 8px; flex-direction: column; align-items: flex-end;">
+        <a href="${p.affiliateUrl}" target="_blank" class="btn btn-secondary" style="font-size: 0.8rem; padding: 4px 8px;">商品を見る</a>
+        <div style="display: flex; gap: 4px;">
+          <button class="btn" style="background: #000; color: #fff; font-size: 0.8rem; padding: 4px 8px;" onclick="triggerManualPost('${escapeHtml(p.productName)}', 'x', '${escapeHtml(keyword)}')">X投稿</button>
+          <button class="btn" style="background: #101010; color: #fff; border: 1px solid #333; font-size: 0.8rem; padding: 4px 8px;" onclick="triggerManualPost('${escapeHtml(p.productName)}', 'threads', '${escapeHtml(keyword)}')">Threads投稿</button>
+        </div>
+      </div>
     </div>
   `).join('');
+}
+
+async function triggerManualPost(productName, sns, keyword) {
+    // IDではなく名前で簡易的に処理（本来はID管理すべきだが、ここでは検索結果から即投稿なので）
+    // Main.gsのmanualPostはproductIdを要求するが、getProductByIdはID検索。
+    // クライアント側で商品オブジェクトを持っていないとIDがわからない（GAS側では都度検索しているので永続化されたIDがない場合がある）。
+    // 解決策: 商品を一時保存するか、manualPostを変更して商品情報を直接受け取るか。
+    // 現状のMain.gsは `getProductById` を使っているため、永続化されていない商品はエラーになる。
+    // ここでは簡易的に、"商品を検索結果から選んで即時投稿" するために、Server側を少し調整する必要があるかも。
+    // いったん「手動投稿」アクションは、商品データそのものを送る形に変更するのが安全。
+
+    // しかしscript.js側で全データを持つのは大変なので、
+    // ここでは productId として (実際はURLなどユニークなもの) を送るが、
+    // Main.gs の manualPost が getProductById 依存だと動かない。
+
+    // 修正: triggerManualPostはサーバー側の改修が必要そうなので、まずはUIだけ作る。
+    // ユーザー要望は「投稿できるようにしてください」なので、
+    // 本当は manualPostWithData を作るべき。
+
+    if (!confirm(`${sns.toUpperCase()}に投稿しますか？\nキーワード: ${keyword}`)) return;
+
+    showToast(`${sns.toUpperCase()}に投稿中...`, 'info');
+
+    // 暫定措置: productIdとして商品名を送る（サーバー側で対応が必要）
+    // あるいは、検索結果の productsリストをJSメモリに保持しておく。
+
+    // ※ ここでサーバーAPI拡張も一緒に行う必要がありますが、Tool制限で1ファイルしか触れない。
+    // いったんUIだけ実装し、次のステップでサーバー側を直します。
+    // 今回は「商品名」をID代わりにして、サーバー側で再検索させるか、
+    // あるいはサーバー側に `manualPostByData` を実装するか。
+
+    // 今回はJSメモリから詳細を取得して送る形にします。
+    const product = currentProducts.find(p => p.productName === productName);
+    if (!product) {
+        showToast('商品データの取得に失敗しました', 'error');
+        return;
+    }
+
+    const result = await apiPost('manualPostRaw', {
+        trendKeyword: keyword,
+        product: product,
+        sns: sns
+    });
+
+    if (result && result.success) {
+        showToast('投稿しました！', 'success');
+    } else {
+        showToast('投稿に失敗しました: ' + (result?.message || '不明なエラー'), 'error');
+    }
+}
+
+// 検索結果を保持する変数
+let currentProducts = [];
+
+// searchProductsも更新してcurrentProductsに保存
+async function searchProducts(keyword) {
+    const container = document.getElementById('products-list');
+    container.innerHTML = '<div class="loading">検索中...</div>';
+
+    const result = await apiPost('searchProducts', { keyword });
+    if (result && result.products) {
+        currentProducts = result.products; // 保存
+        renderProductsList(result.products, keyword);
+    } else {
+        currentProducts = [];
+        container.innerHTML = '<p class="loading">商品が見つかりませんでした</p>';
+    }
 }
 
 function searchProductsWithTrend(keyword) {
@@ -381,7 +454,35 @@ document.addEventListener('DOMContentLoaded', () => {
         if (keyword) searchProducts(keyword);
     });
     document.getElementById('btn-save-settings')?.addEventListener('click', saveSettings);
+    document.getElementById('btn-setup-triggers')?.addEventListener('click', setupTriggers);
+    document.getElementById('btn-delete-triggers')?.addEventListener('click', deleteTriggers);
 
     // 初期データ読み込み
     loadDashboard();
 });
+
+async function setupTriggers() {
+    if (!confirm('現在の「投稿時間」設定に基づいて、自動投稿トリガーを設定・更新しますか？')) return;
+
+    showToast('トリガーを設定中...', 'info');
+    const result = await apiPost('setupTriggers');
+
+    if (result && result.success) {
+        showToast(result.message, 'success');
+    } else {
+        showToast('トリガー設定に失敗しました', 'error');
+    }
+}
+
+async function deleteTriggers() {
+    if (!confirm('すべての自動投稿トリガーを削除して停止しますか？')) return;
+
+    showToast('トリガーを削除中...', 'info');
+    const result = await apiPost('deleteTriggers');
+
+    if (result && result.success) {
+        showToast(result.message, 'success');
+    } else {
+        showToast('トリガー削除に失敗しました', 'error');
+    }
+}
