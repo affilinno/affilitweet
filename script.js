@@ -220,9 +220,10 @@ function renderProductsList(products, keyword) {
       </div>
       <div class="product-actions" style="display: flex; gap: 8px; flex-direction: column; align-items: flex-end;">
         <a href="${p.affiliateUrl}" target="_blank" class="btn btn-secondary" style="font-size: 0.8rem; padding: 4px 8px;">商品を見る</a>
-        <div style="display: flex; gap: 4px;">
+        <div style="display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end;">
           <button class="btn" style="background: #000; color: #fff; font-size: 0.8rem; padding: 4px 8px;" onclick="triggerManualPost('${escapeHtml(p.productName)}', 'x', '${escapeHtml(keyword)}')">X投稿</button>
           <button class="btn" style="background: #101010; color: #fff; border: 1px solid #333; font-size: 0.8rem; padding: 4px 8px;" onclick="triggerManualPost('${escapeHtml(p.productName)}', 'threads', '${escapeHtml(keyword)}')">Threads投稿</button>
+          <button class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; font-size: 0.8rem; padding: 4px 8px;" onclick="triggerManualPost('${escapeHtml(p.productName)}', 'both', '${escapeHtml(keyword)}')">両方投稿</button>
         </div>
       </div>
     </div>
@@ -230,51 +231,55 @@ function renderProductsList(products, keyword) {
 }
 
 async function triggerManualPost(productName, sns, keyword) {
-    // IDではなく名前で簡易的に処理（本来はID管理すべきだが、ここでは検索結果から即投稿なので）
-    // Main.gsのmanualPostはproductIdを要求するが、getProductByIdはID検索。
-    // クライアント側で商品オブジェクトを持っていないとIDがわからない（GAS側では都度検索しているので永続化されたIDがない場合がある）。
-    // 解決策: 商品を一時保存するか、manualPostを変更して商品情報を直接受け取るか。
-    // 現状のMain.gsは `getProductById` を使っているため、永続化されていない商品はエラーになる。
-    // ここでは簡易的に、"商品を検索結果から選んで即時投稿" するために、Server側を少し調整する必要があるかも。
-    // いったん「手動投稿」アクションは、商品データそのものを送る形に変更するのが安全。
+    // snsが'both'の場合は両方に投稿
+    const snsLabel = sns === 'both' ? 'X＆Threads' : sns.toUpperCase();
 
-    // しかしscript.js側で全データを持つのは大変なので、
-    // ここでは productId として (実際はURLなどユニークなもの) を送るが、
-    // Main.gs の manualPost が getProductById 依存だと動かない。
+    if (!confirm(`${snsLabel}に投稿しますか？\nキーワード: ${keyword}`)) return;
 
-    // 修正: triggerManualPostはサーバー側の改修が必要そうなので、まずはUIだけ作る。
-    // ユーザー要望は「投稿できるようにしてください」なので、
-    // 本当は manualPostWithData を作るべき。
+    showToast(`${snsLabel}に投稿中...`, 'info');
 
-    if (!confirm(`${sns.toUpperCase()}に投稿しますか？\nキーワード: ${keyword}`)) return;
-
-    showToast(`${sns.toUpperCase()}に投稿中...`, 'info');
-
-    // 暫定措置: productIdとして商品名を送る（サーバー側で対応が必要）
-    // あるいは、検索結果の productsリストをJSメモリに保持しておく。
-
-    // ※ ここでサーバーAPI拡張も一緒に行う必要がありますが、Tool制限で1ファイルしか触れない。
-    // いったんUIだけ実装し、次のステップでサーバー側を直します。
-    // 今回は「商品名」をID代わりにして、サーバー側で再検索させるか、
-    // あるいはサーバー側に `manualPostByData` を実装するか。
-
-    // 今回はJSメモリから詳細を取得して送る形にします。
     const product = currentProducts.find(p => p.productName === productName);
     if (!product) {
         showToast('商品データの取得に失敗しました', 'error');
         return;
     }
 
-    const result = await apiPost('manualPostRaw', {
-        trendKeyword: keyword,
-        product: product,
-        sns: sns
-    });
+    if (sns === 'both') {
+        // 両方投稿
+        const xResult = await apiPost('manualPostRaw', {
+            trendKeyword: keyword,
+            product: product,
+            sns: 'x'
+        });
 
-    if (result && result.success) {
-        showToast('投稿しました！', 'success');
+        const threadsResult = await apiPost('manualPostRaw', {
+            trendKeyword: keyword,
+            product: product,
+            sns: 'threads'
+        });
+
+        if (xResult?.success && threadsResult?.success) {
+            showToast('X＆Threads両方に投稿しました！', 'success');
+        } else if (xResult?.success) {
+            showToast('Xに投稿しました（Threads失敗）', 'warning');
+        } else if (threadsResult?.success) {
+            showToast('Threadsに投稿しました（X失敗）', 'warning');
+        } else {
+            showToast('両方の投稿に失敗しました', 'error');
+        }
     } else {
-        showToast('投稿に失敗しました: ' + (result?.message || '不明なエラー'), 'error');
+        // 単独投稿
+        const result = await apiPost('manualPostRaw', {
+            trendKeyword: keyword,
+            product: product,
+            sns: sns
+        });
+
+        if (result && result.success) {
+            showToast('投稿しました！', 'success');
+        } else {
+            showToast('投稿に失敗しました: ' + (result?.message || '不明なエラー'), 'error');
+        }
     }
 }
 
@@ -301,6 +306,104 @@ function searchProductsWithTrend(keyword) {
     document.querySelector('[data-page="products"]').click();
     document.getElementById('product-search-input').value = keyword;
     searchProducts(keyword);
+}
+
+// ============================================
+// 楽天トラベル
+// ============================================
+
+// トラベル検索結果を保持
+let currentTravelProducts = [];
+
+async function searchTravel(area) {
+    const container = document.getElementById('travel-list');
+    container.innerHTML = '<div class="loading">検索中...</div>';
+
+    const result = await apiPost('searchTravel', { keyword: area });
+    if (result && result.products && result.products.length > 0) {
+        currentTravelProducts = result.products;
+        renderTravelList(result.products, area);
+    } else {
+        currentTravelProducts = [];
+        container.innerHTML = '<p class="loading">ホテルが見つかりませんでした</p>';
+    }
+}
+
+function renderTravelList(hotels, area) {
+    const container = document.getElementById('travel-list');
+    if (!hotels || hotels.length === 0) {
+        container.innerHTML = '<p class="loading">ホテルがありません</p>';
+        return;
+    }
+
+    container.innerHTML = hotels.map(h => `
+    <div class="list-item" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 8px; margin-bottom: 8px;">
+      <div class="list-item-content">
+        <h4>🏨 ${escapeHtml(h.productName)}</h4>
+        <p>📍 ${escapeHtml(h.area || area)} | 💰 ${formatNumber(h.price)}円〜</p>
+      </div>
+      <div class="product-actions" style="display: flex; gap: 8px; flex-direction: column; align-items: flex-end;">
+        <a href="${h.affiliateUrl}" target="_blank" class="btn btn-secondary" style="font-size: 0.8rem; padding: 4px 8px;">ホテル詳細</a>
+        <div style="display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end;">
+          <button class="btn" style="background: #000; color: #fff; font-size: 0.8rem; padding: 4px 8px;" onclick="triggerTravelPost('${escapeHtml(h.productName)}', 'x', '${escapeHtml(area)}')">X投稿</button>
+          <button class="btn" style="background: #101010; color: #fff; border: 1px solid #333; font-size: 0.8rem; padding: 4px 8px;" onclick="triggerTravelPost('${escapeHtml(h.productName)}', 'threads', '${escapeHtml(area)}')">Threads投稿</button>
+          <button class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; font-size: 0.8rem; padding: 4px 8px;" onclick="triggerTravelPost('${escapeHtml(h.productName)}', 'both', '${escapeHtml(area)}')">両方投稿</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function triggerTravelPost(hotelName, sns, area) {
+    const snsLabel = sns === 'both' ? 'X＆Threads' : sns.toUpperCase();
+
+    if (!confirm(`${snsLabel}に「${area}のおすすめホテル」として投稿しますか？`)) return;
+
+    showToast(`${snsLabel}に投稿中...`, 'info');
+
+    const hotel = currentTravelProducts.find(h => h.productName === hotelName);
+    if (!hotel) {
+        showToast('ホテルデータの取得に失敗しました', 'error');
+        return;
+    }
+
+    const trendKeyword = `${area} 旅行`;
+
+    if (sns === 'both') {
+        const xResult = await apiPost('manualPostRaw', {
+            trendKeyword: trendKeyword,
+            product: hotel,
+            sns: 'x'
+        });
+
+        const threadsResult = await apiPost('manualPostRaw', {
+            trendKeyword: trendKeyword,
+            product: hotel,
+            sns: 'threads'
+        });
+
+        if (xResult?.success && threadsResult?.success) {
+            showToast('X＆Threads両方に投稿しました！', 'success');
+        } else if (xResult?.success) {
+            showToast('Xに投稿しました（Threads失敗）', 'warning');
+        } else if (threadsResult?.success) {
+            showToast('Threadsに投稿しました（X失敗）', 'warning');
+        } else {
+            showToast('両方の投稿に失敗しました', 'error');
+        }
+    } else {
+        const result = await apiPost('manualPostRaw', {
+            trendKeyword: trendKeyword,
+            product: hotel,
+            sns: sns
+        });
+
+        if (result && result.success) {
+            showToast('投稿しました！', 'success');
+        } else {
+            showToast('投稿に失敗しました: ' + (result?.message || '不明なエラー'), 'error');
+        }
+    }
 }
 
 // ============================================
