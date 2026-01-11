@@ -140,6 +140,38 @@ function renderLatestPosts(posts) {
   `).join('');
 }
 
+// 自動投稿実行
+document.getElementById('btn-run-scheduled')?.addEventListener('click', runScheduledPosts);
+
+async function runScheduledPosts() {
+    const countSelect = document.getElementById('scheduled-post-count');
+    const count = parseInt(countSelect.value) || 1;
+
+    if (!confirm(`自動投稿を${count}回実行しますか？\n（トレンド取得→商品検索→投稿を${count}回繰り返します）`)) {
+        return;
+    }
+
+    showToast(`自動投稿を${count}回実行中...`, 'info');
+
+    const result = await apiPost('runScheduledPost', { count: count });
+
+    if (result && result.success) {
+        const successCount = result.results.filter(r => r.success).length;
+        const failCount = result.results.filter(r => !r.success).length;
+
+        if (failCount === 0) {
+            showToast(`✅ ${successCount}回の投稿が完了しました！`, 'success');
+        } else {
+            showToast(`⚠️ ${successCount}回成功、${failCount}回失敗`, 'warning');
+        }
+
+        // ダッシュボードを再読み込み
+        loadDashboard();
+    } else {
+        showToast('自動投稿に失敗しました: ' + (result?.error || '不明なエラー'), 'error');
+    }
+}
+
 // ============================================
 // トレンド
 // ============================================
