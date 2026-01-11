@@ -618,6 +618,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-save-settings')?.addEventListener('click', saveSettings);
     document.getElementById('btn-setup-triggers')?.addEventListener('click', setupTriggers);
     document.getElementById('btn-delete-triggers')?.addEventListener('click', deleteTriggers);
+    document.getElementById('btn-setup-rakuten-trigger')?.addEventListener('click', setupRakutenTrigger);
+    document.getElementById('btn-delete-rakuten-trigger')?.addEventListener('click', deleteRakutenTrigger);
 
     // 初期データ読み込み
     loadDashboard();
@@ -644,6 +646,32 @@ async function deleteTriggers() {
 
     if (result && result.success) {
         showToast(result.message, 'success');
+    } else {
+        showToast('トリガー削除に失敗しました', 'error');
+    }
+}
+
+async function setupRakutenTrigger() {
+    if (!confirm('毎日12時に楽天ブックス専用の投稿トリガーを設定しますか？')) return;
+
+    showToast('楽天ブックストリガーを設定中...', 'info');
+    const result = await apiPost('setupRakutenTrigger');
+
+    if (result && result.success) {
+        showToast(result.message, 'success');
+    } else {
+        showToast('トリガー設定に失敗しました', 'error');
+    }
+}
+
+async function deleteRakutenTrigger() {
+    if (!confirm('楽天ブックス専用トリガーを削除して停止しますか？')) return;
+
+    showToast('楽天ブックストリガーを削除中...', 'info');
+    const result = await apiPost('deleteRakutenTrigger');
+
+    if (result && result.success) {
+        showToast('楽天ブックストリガーを解除しました', 'success');
     } else {
         showToast('トリガー削除に失敗しました', 'error');
     }
