@@ -172,6 +172,33 @@ async function runScheduledPosts() {
     }
 }
 
+// 楽天ブックス投稿
+document.getElementById('btn-post-books')?.addEventListener('click', postFromBooks);
+
+async function postFromBooks() {
+    const categorySelect = document.getElementById('books-category');
+    const category = categorySelect.value;
+    const categoryName = category || 'ランダム';
+
+    if (!confirm(`楽天ブックス（${categoryName}）から投稿しますか？\n（本・CD・DVD・ゲームの新作・人気商品を投稿）`)) {
+        return;
+    }
+
+    showToast(`楽天ブックス（${categoryName}）投稿中...`, 'info');
+
+    const result = await apiPost('postRakutenBooks', {
+        bookType: category || null,
+        sns: 'both'
+    });
+
+    if (result && result.success) {
+        showToast(`✅ 投稿完了: ${result.product}`, 'success');
+        loadDashboard();
+    } else {
+        showToast('投稿に失敗しました: ' + (result?.message || '不明なエラー'), 'error');
+    }
+}
+
 // ============================================
 // トレンド
 // ============================================
