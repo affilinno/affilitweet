@@ -263,52 +263,74 @@
             </div>
           </div>
         </div>
+  </div>
 
-        <div class="card">
-          <div class="card-header">
-            <h3>カテゴリ設定</h3>
-          </div>
-          <div class="card-body">
-            <div class="form-group">
-              <label class="toggle"><input type="checkbox" id="setting-cat-product"><span>商品全般</span></label>
-            </div>
-            <div class="form-group">
-              <label class="toggle"><input type="checkbox" id="setting-cat-book"><span>本</span></label>
-            </div>
-            <div class="form-group">
-              <label class="toggle"><input type="checkbox" id="setting-cat-cd"><span>CD</span></label>
-            </div>
-            <div class="form-group">
-              <label class="toggle"><input type="checkbox" id="setting-cat-dvd"><span>DVD</span></label>
-            </div>
-            <div class="form-group">
-              <label class="toggle"><input type="checkbox" id="setting-cat-game"><span>ゲーム</span></label>
-            </div>
-            <div class="form-group">
-              <label class="toggle"><input type="checkbox" id="setting-cat-travel"><span>楽天トラベル</span></label>
-            </div>
-          </div>
-        </div>
+  <div class="card">
+    <div class="card-header">
+      <h3>楽天ブックス専用トリガー（毎日12時）</h3>
+    </div>
+    <div class="card-body">
+      <p style="margin-bottom: 1rem; color: #666; font-size: 0.9rem;">
+        毎日12時に楽天ブックスの新作やランキングから自動投稿します。<br>
+        通常の自動投稿とは別に実行されます。
+      </p>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-secondary" id="btn-setup-rakuten-trigger"
+          style="background: linear-gradient(135deg, #f39c12 0%, #e74c3c 100%); color: #fff;">
+          ⏰ 12時トリガー設定
+        </button>
+        <button class="btn" style="background-color: #ff4757; color: white;" id="btn-delete-rakuten-trigger">
+          ⛔ トリガー解除
+        </button>
+      </div>
+    </div>
+  </div>
 
-        <div class="card full-width">
-          <div class="card-header">
-            <h3>プロンプト設定</h3>
-          </div>
-          <div class="card-body">
-            <div class="form-group">
-              <label>トレンド取得プロンプト</label>
-              <textarea id="setting-prompt-trend" class="textarea" rows="6"></textarea>
-            </div>
-            <div class="form-group">
-              <label>X投稿文生成プロンプト</label>
-              <textarea id="setting-prompt-x" class="textarea" rows="6"></textarea>
-            </div>
-            <div class="form-group">
-              <label>Threads投稿文生成プロンプト</label>
-              <textarea id="setting-prompt-threads" class="textarea" rows="6"></textarea>
-            </div>
-          </div>
-        </div>
+  <div class="card">
+    <div class="card-header">
+      <h3>カテゴリ設定</h3>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label class="toggle"><input type="checkbox" id="setting-cat-product"><span>商品全般</span></label>
+      </div>
+      <div class="form-group">
+        <label class="toggle"><input type="checkbox" id="setting-cat-book"><span>本</span></label>
+      </div>
+      <div class="form-group">
+        <label class="toggle"><input type="checkbox" id="setting-cat-cd"><span>CD</span></label>
+      </div>
+      <div class="form-group">
+        <label class="toggle"><input type="checkbox" id="setting-cat-dvd"><span>DVD</span></label>
+      </div>
+      <div class="form-group">
+        <label class="toggle"><input type="checkbox" id="setting-cat-game"><span>ゲーム</span></label>
+      </div>
+      <div class="form-group">
+        <label class="toggle"><input type="checkbox" id="setting-cat-travel"><span>楽天トラベル</span></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card full-width">
+    <div class="card-header">
+      <h3>プロンプト設定</h3>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label>トレンド取得プロンプト</label>
+        <textarea id="setting-prompt-trend" class="textarea" rows="6"></textarea>
+      </div>
+      <div class="form-group">
+        <label>X投稿文生成プロンプト</label>
+        <textarea id="setting-prompt-x" class="textarea" rows="6"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Threads投稿文生成プロンプト</label>
+        <textarea id="setting-prompt-threads" class="textarea" rows="6"></textarea>
+      </div>
+    </div>
+  </div>
   </div>
   </section>
   </main>
