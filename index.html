@@ -47,9 +47,23 @@
       <section id="page-dashboard" class="page active">
         <header class="page-header">
           <h1>ダッシュボード</h1>
-          <button class="btn btn-primary" id="btn-fetch-trends">
-            🔄 トレンド取得
-          </button>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn btn-primary" id="btn-fetch-trends">
+              🔄 トレンド取得
+            </button>
+            <div style="display: flex; gap: 4px; align-items: center;">
+              <select id="scheduled-post-count" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                <option value="1">1回</option>
+                <option value="2">2回</option>
+                <option value="3">3回</option>
+                <option value="5">5回</option>
+              </select>
+              <button class="btn" id="btn-run-scheduled"
+                style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: #fff;">
+                🚀 自動投稿実行
+              </button>
+            </div>
+          </div>
         </header>
 
         <div class="stats-grid">
