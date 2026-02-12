@@ -4,7 +4,7 @@
 
 const CONFIG = {
   // GAS Web App URL（デプロイ後に設定）
-  GAS_API_URL: 'https://script.google.com/macros/s/AKfycbz00_Vm1VIAP3C4ucZ5I0Q6upze1dl-eq3pJGUeEpSeZUPaANA_gJTIhbOIQq7VHxAqCQ/exec',
+  GAS_API_URL: 'https://script.google.com/macros/s/AKfycbz5GtfiFbsY9lPDcE6BEPbmPiC_bQYE_zaLnJKWOZ26lylZzTNaS5xu5cqJ_TANd8pFQQ/exec',
   
   // ダッシュボード認証用APIキー
   API_KEY: 'AFFILINNO',
