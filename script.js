@@ -222,18 +222,31 @@ function renderTrendsList(trends) {
         return;
     }
 
-    container.innerHTML = trends.map(t => `
-    <div class="list-item">
-      <div class="list-item-content">
-        <h4>🔥 ${escapeHtml(t.keyword)}</h4>
-        <p>${escapeHtml(t.reason || '')} | ${formatDate(t.fetchedAt)}</p>
+    container.innerHTML = trends.map(t => {
+        // 検索クエリ候補ボタンを生成
+        const searchQueriesHtml = (t.searchQueries && t.searchQueries.length > 0)
+            ? `<div class="search-queries">
+                ${t.searchQueries.map(q =>
+                `<button class="search-query-tag" onclick="searchProductsWithTrend('${escapeHtml(q)}')" title="${escapeHtml(q)}">🔍 ${escapeHtml(q)}</button>`
+            ).join('')}
+               </div>`
+            : '';
+
+        return `
+    <div class="list-item list-item-column">
+      <div class="list-item-row">
+        <div class="list-item-content">
+          <h4>🔥 ${escapeHtml(t.keyword)}</h4>
+          <p>${escapeHtml(t.reason || '')} | ${formatDate(t.fetchedAt)}</p>
+        </div>
+        <div>
+          <span class="badge ${t.used ? 'badge-success' : ''}">${t.used ? '使用済' : '未使用'}</span>
+          <button class="btn btn-secondary" onclick="searchProductsWithTrend('${escapeHtml(t.keyword)}')">商品検索</button>
+        </div>
       </div>
-      <div>
-        <span class="badge ${t.used ? 'badge-success' : ''}">${t.used ? '使用済' : '未使用'}</span>
-        <button class="btn btn-secondary" onclick="searchProductsWithTrend('${escapeHtml(t.keyword)}')">商品検索</button>
-      </div>
-    </div>
-  `).join('');
+      ${searchQueriesHtml}
+    </div>`;
+    }).join('');
 }
 
 async function fetchNewTrends() {
