@@ -392,6 +392,24 @@ body {
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
+/* 商品検索リストのレイアウト修正 */
+.list-item .list-item-content {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.list-item .list-item-content h4 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-item .product-actions {
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
 .badge {
   padding: 4px 8px;
   border-radius: 4px;
