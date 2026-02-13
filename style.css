@@ -350,6 +350,48 @@ body {
   color: var(--text-secondary);
 }
 
+/* トレンドリストの拡張レイアウト */
+.list-item-column {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.list-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 検索クエリ候補タグ */
+.search-queries {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
+.search-query-tag {
+  padding: 4px 10px;
+  border-radius: 16px;
+  border: 1px solid var(--primary);
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.search-query-tag:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
 .badge {
   padding: 4px 8px;
   border-radius: 4px;
